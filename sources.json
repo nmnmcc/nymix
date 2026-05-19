@@ -1,0 +1,40 @@
+{
+  "releaseSet": {
+    "key": "nym-vpn-app-v1.29.3/nym-vpn-core-v1.29.3",
+    "repo": "nymtech/nym-vpn-client",
+    "channel": "stable",
+    "source": "github-releases",
+    "version": "1.29.3",
+    "pairingStrategy": "highest stable X.Y.Z version present in both app and core releases with required Linux assets",
+    "appTag": "nym-vpn-app-v1.29.3",
+    "daemonTag": "nym-vpn-core-v1.29.3"
+  },
+  "app": {
+    "tag": "nym-vpn-app-v1.29.3",
+    "version": "1.29.3",
+    "appImage": {
+      "x86_64-linux": {
+        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-app-v1.29.3/NymVPN_1.29.3_amd64.AppImage",
+        "hash": "sha256-UdCF5KbZTrXkR1Sc0JfuDYc0g+Z25wHcfUc+NId1zk8="
+      },
+      "aarch64-linux": {
+        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-app-v1.29.3/NymVPN_1.29.3_aarch64.AppImage",
+        "hash": "sha256-1UH7c/xYoS7HCj3V4UYIgnbq5ONio8E674YGRILqbW0="
+      }
+    }
+  },
+  "daemon": {
+    "tag": "nym-vpn-core-v1.29.3",
+    "version": "1.29.3",
+    "deb": {
+      "x86_64-linux": {
+        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-core-v1.29.3/nym-vpnd_1.29.3_amd64.deb",
+        "hash": "sha256-uSIWSz69eGkO6cFlHRA5rBDdV7Y3dov1kEVObcr6RYo="
+      },
+      "aarch64-linux": {
+        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-core-v1.29.3/nym-vpnd_1.29.3_arm64.deb",
+        "hash": "sha256-rJ/H6cFzzGkxmu64e53q6LLTlXUt8Yw1IT6LHHwQhNk="
+      }
+    }
+  }
+}

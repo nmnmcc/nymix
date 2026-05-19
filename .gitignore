@@ -1,1 +1,4 @@
-.tmp
+/.direnv/
+/result
+/result-*
+/.tmp/
