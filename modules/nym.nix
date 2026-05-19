@@ -11,29 +11,26 @@ let
   flakePackages = self.packages.${system} or (throw "nymix does not provide packages for ${system}");
   packageReleaseSet = package: package.passthru.nymVpnReleaseSet or null;
   packageVersion = package: package.passthru.nymVpnVersion or null;
+  enabledPackages =
+    lib.optional cfg.app.enable cfg.app.package
+    ++ lib.optional cfg.vpnc.enable cfg.vpnc.package
+    ++ lib.optional cfg.vpnd.enable cfg.vpnd.package;
+  enabledPackagesUseSameReleaseSet =
+    builtins.length enabledPackages < 2
+    || (
+      let
+        firstPackage = builtins.head enabledPackages;
+        firstReleaseSet = packageReleaseSet firstPackage;
+        firstVersion = packageVersion firstPackage;
+      in
+      firstReleaseSet != null
+      && firstVersion != null
+      && lib.all (
+        package: packageReleaseSet package == firstReleaseSet && packageVersion package == firstVersion
+      ) enabledPackages
+    );
 in
 {
-  imports = [
-    (lib.mkRenamedOptionModule
-      [ "services" "nym" "package" ]
-      [
-        "services"
-        "nym"
-        "app"
-        "package"
-      ]
-    )
-    (lib.mkRenamedOptionModule
-      [ "services" "nym" "daemonPackage" ]
-      [
-        "services"
-        "nym"
-        "daemon"
-        "package"
-      ]
-    )
-  ];
-
   options.services.nym = {
     enable = lib.mkEnableOption "all default NymVPN components";
 
@@ -53,7 +50,23 @@ in
       };
     };
 
-    daemon = {
+    vpnc = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = cfg.enable;
+        defaultText = lib.literalExpression "config.services.nym.enable";
+        description = "Whether to install the nym-vpnc command-line client.";
+      };
+
+      package = lib.mkOption {
+        type = lib.types.package;
+        default = flakePackages.nym-vpnc;
+        defaultText = lib.literalExpression "nymix.packages.\${pkgs.stdenv.hostPlatform.system}.nym-vpnc";
+        description = "Package providing the nym-vpnc command-line client.";
+      };
+    };
+
+    vpnd = {
       enable = lib.mkOption {
         type = lib.types.bool;
         default = cfg.enable;
@@ -73,27 +86,22 @@ in
   config = {
     assertions = [
       {
-        assertion =
-          !(cfg.app.enable && cfg.daemon.enable)
-          || (
-            packageReleaseSet cfg.app.package != null
-            && packageReleaseSet cfg.app.package == packageReleaseSet cfg.daemon.package
-            && packageVersion cfg.app.package != null
-            && packageVersion cfg.app.package == packageVersion cfg.daemon.package
-          );
+        assertion = enabledPackagesUseSameReleaseSet;
         message = ''
-          services.nym.app.package and services.nym.daemon.package must use the same NymVPN X.Y.Z version and release set.
-          Use packages from this flake together, or set both package passthru.nymVpnVersion and passthru.nymVpnReleaseSet values to the same official app/core pairing.
+          Enabled services.nym packages must use the same NymVPN X.Y.Z version and release set.
+          Use packages from this flake together, or set each package's passthru.nymVpnVersion and passthru.nymVpnReleaseSet values to the same official app/core pairing.
         '';
       }
     ];
 
     environment.systemPackages =
-      lib.optional cfg.app.enable cfg.app.package ++ lib.optional cfg.daemon.enable cfg.daemon.package;
+      lib.optional cfg.app.enable cfg.app.package
+      ++ lib.optional cfg.vpnc.enable cfg.vpnc.package
+      ++ lib.optional cfg.vpnd.enable cfg.vpnd.package;
 
-    services.dbus.enable = lib.mkIf cfg.daemon.enable true;
+    services.dbus.enable = lib.mkIf cfg.vpnd.enable true;
 
-    systemd.services.nym-vpnd = lib.mkIf cfg.daemon.enable {
+    systemd.services.nym-vpnd = lib.mkIf cfg.vpnd.enable {
       description = "NymVPN daemon";
       wantedBy = [ "multi-user.target" ];
       before = [ "network-online.target" ];
@@ -113,7 +121,7 @@ in
         wireguard-tools
       ];
       serviceConfig = {
-        ExecStart = "${lib.getExe' cfg.daemon.package "nym-vpnd"} -v run-as-service";
+        ExecStart = "${lib.getExe' cfg.vpnd.package "nym-vpnd"} -v run-as-service";
         Restart = "always";
         RestartSec = 2;
       };

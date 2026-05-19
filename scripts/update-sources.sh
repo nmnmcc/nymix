@@ -24,6 +24,13 @@ hash_to_sri() {
   nix hash convert --hash-algo sha256 --to sri "$1"
 }
 
+url_hash() {
+  local url="$1"
+  local file="$tmp/url-hash-${RANDOM}-${RANDOM}"
+  curl -fsSL --retry 3 --retry-delay 2 "$url" -o "$file"
+  nix hash file --type sha256 --sri "$file"
+}
+
 asset_url() {
   local release_file="$1"
   local name="$2"
@@ -106,20 +113,14 @@ if ! jq -er '
       split(".") | map(tonumber);
     def has_asset($name):
       any(.assets[].name; . == $name);
-    def has_any_asset($names):
-      any(.assets[].name; . as $asset | any($names[]; . == $asset));
     def has_app_assets($version):
-      has_any_asset([
-        "NymVPN_" + $version + "_amd64.AppImage",
-        "NymVPN_" + $version + "_x64.AppImage"
-      ])
-      and has_any_asset([
-        "NymVPN_" + $version + "_aarch64.AppImage",
-        "NymVPN_" + $version + "_arm64.AppImage"
-      ]);
+      has_asset("nym-vpn_" + $version + "_linux_x64")
+      and has_asset("nym-vpn_" + $version + "_linux_arm64");
     def has_core_assets($version):
       has_asset("nym-vpnd_" + $version + "_amd64.deb")
-      and has_asset("nym-vpnd_" + $version + "_arm64.deb");
+      and has_asset("nym-vpnd_" + $version + "_arm64.deb")
+      and has_asset("nym-vpnc_" + $version + "_amd64.deb")
+      and has_asset("nym-vpnc_" + $version + "_arm64.deb");
 
     [
       .[] | select(stable_tag("app"))
@@ -139,7 +140,7 @@ if ! jq -er '
       | select($release | has_core_assets($version))
       | {
           version: $version,
-          daemonTag: $release.tag_name,
+          coreTag: $release.tag_name,
           sort: ($version | semver)
         }
     ] as $cores
@@ -150,7 +151,7 @@ if ! jq -er '
       | {
           version: $app.version,
           appTag: $app.appTag,
-          daemonTag: $core.daemonTag,
+          coreTag: $core.coreTag,
           sort: $app.sort
         }
     ]
@@ -163,44 +164,58 @@ if ! jq -er '
 fi
 
 app_tag="$(jq -er '.appTag' "$selected_release_set")"
-daemon_tag="$(jq -er '.daemonTag' "$selected_release_set")"
+core_tag="$(jq -er '.coreTag' "$selected_release_set")"
 app_version="$(jq -er '.version' "$selected_release_set")"
-daemon_version="$app_version"
+core_version="$app_version"
 
 app_release="$(release_by_tag "$app_tag")"
-daemon_release="$(release_by_tag "$daemon_tag")"
+core_release="$(release_by_tag "$core_tag")"
 
-x86_app_name="$(asset_name_by_arch "$app_release" "NymVPN_${app_version}_" ".AppImage" '(^|_)(amd64|x64)(\.|$)')"
-arm_app_name="$(asset_name_by_arch "$app_release" "NymVPN_${app_version}_" ".AppImage" '(^|_)(aarch64|arm64)(\.|$)')"
-x86_daemon_name="$(asset_name_by_arch "$daemon_release" "nym-vpnd_" ".deb" '(^|_)amd64(\.|$)')"
-arm_daemon_name="$(asset_name_by_arch "$daemon_release" "nym-vpnd_" ".deb" '(^|_)arm64(\.|$)')"
+x86_app_binary_name="$(asset_name_by_arch "$app_release" "nym-vpn_${app_version}_linux_" "" '(^|_)(amd64|x64)(\.|$)')"
+arm_app_binary_name="$(asset_name_by_arch "$app_release" "nym-vpn_${app_version}_linux_" "" '(^|_)(aarch64|arm64)(\.|$)')"
+x86_vpnd_name="$(asset_name_by_arch "$core_release" "nym-vpnd_" ".deb" '(^|_)amd64(\.|$)')"
+arm_vpnd_name="$(asset_name_by_arch "$core_release" "nym-vpnd_" ".deb" '(^|_)arm64(\.|$)')"
+x86_vpnc_name="$(asset_name_by_arch "$core_release" "nym-vpnc_" ".deb" '(^|_)amd64(\.|$)')"
+arm_vpnc_name="$(asset_name_by_arch "$core_release" "nym-vpnc_" ".deb" '(^|_)arm64(\.|$)')"
 
-x86_app_url="$(asset_url "$app_release" "$x86_app_name")"
-arm_app_url="$(asset_url "$app_release" "$arm_app_name")"
-x86_daemon_url="$(asset_url "$daemon_release" "$x86_daemon_name")"
-arm_daemon_url="$(asset_url "$daemon_release" "$arm_daemon_name")"
+x86_app_binary_url="$(asset_url "$app_release" "$x86_app_binary_name")"
+arm_app_binary_url="$(asset_url "$app_release" "$arm_app_binary_name")"
+x86_vpnd_url="$(asset_url "$core_release" "$x86_vpnd_name")"
+arm_vpnd_url="$(asset_url "$core_release" "$arm_vpnd_name")"
+x86_vpnc_url="$(asset_url "$core_release" "$x86_vpnc_name")"
+arm_vpnc_url="$(asset_url "$core_release" "$arm_vpnc_name")"
+icon_url="https://raw.githubusercontent.com/${repo}/${app_tag}/nym-vpn-app/.pkg/icon.svg"
 
-x86_app_hash="$(asset_hash "$app_release" "$x86_app_name")"
-arm_app_hash="$(asset_hash "$app_release" "$arm_app_name")"
-x86_daemon_hash="$(asset_hash "$daemon_release" "$x86_daemon_name")"
-arm_daemon_hash="$(asset_hash "$daemon_release" "$arm_daemon_name")"
+x86_app_binary_hash="$(asset_hash "$app_release" "$x86_app_binary_name")"
+arm_app_binary_hash="$(asset_hash "$app_release" "$arm_app_binary_name")"
+x86_vpnd_hash="$(asset_hash "$core_release" "$x86_vpnd_name")"
+arm_vpnd_hash="$(asset_hash "$core_release" "$arm_vpnd_name")"
+x86_vpnc_hash="$(asset_hash "$core_release" "$x86_vpnc_name")"
+arm_vpnc_hash="$(asset_hash "$core_release" "$arm_vpnc_name")"
+icon_hash="$(url_hash "$icon_url")"
 
 jq -n \
   --arg app_tag "$app_tag" \
   --arg app_version "$app_version" \
-  --arg daemon_tag "$daemon_tag" \
-  --arg daemon_version "$daemon_version" \
+  --arg core_tag "$core_tag" \
+  --arg core_version "$core_version" \
   --arg repo "$repo" \
   --arg release_version "$app_version" \
-  --arg release_set_key "${app_tag}/${daemon_tag}" \
-  --arg x86_app_url "$x86_app_url" \
-  --arg x86_app_hash "$x86_app_hash" \
-  --arg arm_app_url "$arm_app_url" \
-  --arg arm_app_hash "$arm_app_hash" \
-  --arg x86_daemon_url "$x86_daemon_url" \
-  --arg x86_daemon_hash "$x86_daemon_hash" \
-  --arg arm_daemon_url "$arm_daemon_url" \
-  --arg arm_daemon_hash "$arm_daemon_hash" \
+  --arg release_set_key "${app_tag}/${core_tag}" \
+  --arg x86_app_binary_url "$x86_app_binary_url" \
+  --arg x86_app_binary_hash "$x86_app_binary_hash" \
+  --arg arm_app_binary_url "$arm_app_binary_url" \
+  --arg arm_app_binary_hash "$arm_app_binary_hash" \
+  --arg icon_url "$icon_url" \
+  --arg icon_hash "$icon_hash" \
+  --arg x86_vpnd_url "$x86_vpnd_url" \
+  --arg x86_vpnd_hash "$x86_vpnd_hash" \
+  --arg arm_vpnd_url "$arm_vpnd_url" \
+  --arg arm_vpnd_hash "$arm_vpnd_hash" \
+  --arg x86_vpnc_url "$x86_vpnc_url" \
+  --arg x86_vpnc_hash "$x86_vpnc_hash" \
+  --arg arm_vpnc_url "$arm_vpnc_url" \
+  --arg arm_vpnc_hash "$arm_vpnc_hash" \
   '{
     releaseSet: {
       key: $release_set_key,
@@ -208,38 +223,56 @@ jq -n \
       channel: "stable",
       source: "github-releases",
       version: $release_version,
-      pairingStrategy: "highest stable X.Y.Z version present in both app and core releases with required Linux assets",
+      pairingStrategy: "highest stable X.Y.Z version present in both app and core releases with required Linux app, vpnc, and vpnd assets",
       appTag: $app_tag,
-      daemonTag: $daemon_tag
+      coreTag: $core_tag
     },
     app: {
       tag: $app_tag,
       version: $app_version,
-      appImage: {
+      icon: {
+        url: $icon_url,
+        hash: $icon_hash
+      },
+      binary: {
         "x86_64-linux": {
-          url: $x86_app_url,
-          hash: $x86_app_hash
+          url: $x86_app_binary_url,
+          hash: $x86_app_binary_hash
         },
         "aarch64-linux": {
-          url: $arm_app_url,
-          hash: $arm_app_hash
+          url: $arm_app_binary_url,
+          hash: $arm_app_binary_hash
         }
       }
     },
-    daemon: {
-      tag: $daemon_tag,
-      version: $daemon_version,
+    vpnc: {
+      tag: $core_tag,
+      version: $core_version,
       deb: {
         "x86_64-linux": {
-          url: $x86_daemon_url,
-          hash: $x86_daemon_hash
+          url: $x86_vpnc_url,
+          hash: $x86_vpnc_hash
         },
         "aarch64-linux": {
-          url: $arm_daemon_url,
-          hash: $arm_daemon_hash
+          url: $arm_vpnc_url,
+          hash: $arm_vpnc_hash
+        }
+      }
+    },
+    vpnd: {
+      tag: $core_tag,
+      version: $core_version,
+      deb: {
+        "x86_64-linux": {
+          url: $x86_vpnd_url,
+          hash: $x86_vpnd_hash
+        },
+        "aarch64-linux": {
+          url: $arm_vpnd_url,
+          hash: $arm_vpnd_hash
         }
       }
     }
   }' >"${root}/sources.json"
 
-echo "Updated NymVPN app ${app_version} and daemon ${daemon_version}"
+echo "Updated NymVPN app ${app_version} and core ${core_version}"

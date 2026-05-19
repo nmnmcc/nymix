@@ -3,19 +3,16 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
-  dbus,
   dpkg,
-  libmnl,
-  libnftnl,
   sources,
 }:
 let
-  pname = "nym-vpnd";
-  version = sources.vpnd.version;
-  releaseSet = sources.releaseSet.key or "${sources.app.tag}/${sources.vpnd.tag}";
+  pname = "nym-vpnc";
+  version = sources.vpnc.version;
+  releaseSet = sources.releaseSet.key or "${sources.app.tag}/${sources.vpnc.tag}";
   systemSource =
-    sources.vpnd.deb.${stdenv.hostPlatform.system}
-      or (throw "NymVPN daemon deb is not available for ${stdenv.hostPlatform.system}");
+    sources.vpnc.deb.${stdenv.hostPlatform.system}
+      or (throw "NymVPN command-line client deb is not available for ${stdenv.hostPlatform.system}");
 in
 stdenv.mkDerivation {
   inherit pname version;
@@ -30,9 +27,6 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [
-    dbus
-    libmnl
-    libnftnl
     stdenv.cc.cc.lib
   ];
 
@@ -48,26 +42,23 @@ stdenv.mkDerivation {
   installPhase = ''
     runHook preInstall
 
-    install -Dm755 usr/bin/nym-vpnd $out/bin/nym-vpnd
-    install -Dm755 usr/bin/nym-exclude $out/bin/nym-exclude
-    install -Dm444 usr/lib/systemd/system/nym-vpnd.service \
-      $out/share/systemd/nym-vpnd.service
+    install -Dm755 usr/bin/nym-vpnc $out/bin/nym-vpnc
 
     runHook postInstall
   '';
 
   passthru = {
-    nymVpnComponent = "vpnd";
+    nymVpnComponent = "vpnc";
     nymVpnVersion = version;
     nymVpnReleaseSet = releaseSet;
   };
 
   meta = {
-    description = "NymVPN daemon";
+    description = "NymVPN command-line client";
     homepage = "https://nym.com/download/linux";
-    changelog = "https://github.com/nymtech/nym-vpn-client/releases/tag/${sources.vpnd.tag}";
+    changelog = "https://github.com/nymtech/nym-vpn-client/releases/tag/${sources.vpnc.tag}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "nym-vpnd";
+    mainProgram = "nym-vpnc";
     platforms = [
       "x86_64-linux"
       "aarch64-linux"

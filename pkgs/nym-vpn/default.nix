@@ -2,45 +2,80 @@
   lib,
   stdenv,
   fetchurl,
-  appimageTools,
-  desktop-file-utils,
+  autoPatchelfHook,
+  cairo,
+  dbus,
+  gdk-pixbuf,
+  glib-networking,
+  glib,
+  gsettings-desktop-schemas,
+  gtk3,
+  libsoup_3,
+  makeDesktopItem,
+  openssl,
+  wrapGAppsHook3,
+  webkitgtk_4_1,
   sources,
 }:
 let
   pname = "nym-vpn";
   version = sources.app.version;
-  systemSource =
-    sources.app.appImage.${stdenv.hostPlatform.system}
-      or (throw "NymVPN AppImage is not available for ${stdenv.hostPlatform.system}");
+  binarySource =
+    sources.app.binary.${stdenv.hostPlatform.system}
+      or (throw "NymVPN binary is not available for ${stdenv.hostPlatform.system}");
   src = fetchurl {
-    inherit (systemSource) url hash;
+    inherit (binarySource) url hash;
   };
-  appimageContents = appimageTools.extractType2 {
-    inherit pname version src;
+  icon = fetchurl {
+    inherit (sources.app.icon) url hash;
   };
-  releaseSet = sources.releaseSet.key or "${sources.app.tag}/${sources.daemon.tag}";
+  desktopItem = makeDesktopItem {
+    name = "NymVPN";
+    desktopName = "NymVPN";
+    comment = "NymVPN desktop client";
+    exec = "env LOG_FILE=1 RUST_LOG=info,nym_vpn_app=debug ${pname}";
+    icon = "nym-vpn-app";
+    mimeTypes = [ "x-scheme-handler/nymvpn" ];
+    startupWMClass = "nym-vpn-app";
+    terminal = false;
+    tryExec = pname;
+  };
+  releaseSet = sources.releaseSet.key or "${sources.app.tag}/${sources.vpnd.tag}";
 in
-appimageTools.wrapType2 {
+stdenv.mkDerivation {
   inherit pname version src;
 
-  nativeBuildInputs = [ desktop-file-utils ];
+  nativeBuildInputs = [
+    autoPatchelfHook
+    wrapGAppsHook3
+  ];
 
-  extraInstallCommands = ''
+  buildInputs = [
+    cairo
+    dbus
+    gdk-pixbuf
+    glib-networking
+    glib
+    gsettings-desktop-schemas
+    gtk3
+    libsoup_3
+    openssl
+    stdenv.cc.cc.lib
+    webkitgtk_4_1
+  ];
+
+  dontUnpack = true;
+
+  installPhase = ''
+    runHook preInstall
+
+    install -Dm755 $src $out/bin/${pname}
     ln -s $out/bin/${pname} $out/bin/nym-vpn-app
+    install -Dm444 ${icon} $out/share/icons/hicolor/scalable/apps/nym-vpn-app.svg
+    install -Dm444 ${desktopItem}/share/applications/NymVPN.desktop \
+      $out/share/applications/NymVPN.desktop
 
-    install -Dm444 ${appimageContents}/usr/share/icons/hicolor/32x32/apps/nym-vpn-app.png \
-      $out/share/icons/hicolor/32x32/apps/nym-vpn-app.png
-    install -Dm444 ${appimageContents}/usr/share/icons/hicolor/128x128/apps/nym-vpn-app.png \
-      $out/share/icons/hicolor/128x128/apps/nym-vpn-app.png
-    install -Dm444 ${appimageContents}/usr/share/icons/hicolor/256x256@2/apps/nym-vpn-app.png \
-      $out/share/icons/hicolor/256x256@2/apps/nym-vpn-app.png
-
-    desktop-file-install \
-      --dir $out/share/applications \
-      --set-key Exec --set-value "env LOG_FILE=1 RUST_LOG=info,nym_vpn_app=debug ${pname}" \
-      --set-key TryExec --set-value ${pname} \
-      --set-key Icon --set-value nym-vpn-app \
-      ${appimageContents}/usr/share/applications/NymVPN.desktop
+    runHook postInstall
   '';
 
   passthru = {

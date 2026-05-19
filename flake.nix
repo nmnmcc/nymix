@@ -17,6 +17,7 @@
     {
       overlays.default = final: prev: {
         nym-vpn = final.callPackage ./pkgs/nym-vpn { inherit sources; };
+        nym-vpnc = final.callPackage ./pkgs/nym-vpnc { inherit sources; };
         nym-vpnd = final.callPackage ./pkgs/nym-vpnd { inherit sources; };
       };
 
@@ -29,13 +30,13 @@
           };
         in
         {
-          inherit (pkgs) nym-vpn nym-vpnd;
+          inherit (pkgs) nym-vpn nym-vpnc nym-vpnd;
           default = pkgs.nym-vpn;
         }
       );
 
       checks = forAllSystems (system: {
-        inherit (self.packages.${system}) nym-vpn nym-vpnd;
+        inherit (self.packages.${system}) nym-vpn nym-vpnc nym-vpnd;
       });
 
       devShells = forAllSystems (
