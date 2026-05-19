@@ -5,14 +5,17 @@
   autoPatchelfHook,
   cairo,
   dbus,
+  desktop-file-utils,
   gdk-pixbuf,
   glib-networking,
   glib,
   gsettings-desktop-schemas,
   gtk3,
+  libayatana-appindicator,
   libsoup_3,
   makeDesktopItem,
   openssl,
+  pciutils,
   wrapGAppsHook3,
   webkitgtk_4_1,
   sources,
@@ -41,6 +44,13 @@ let
     tryExec = pname;
   };
   releaseSet = sources.releaseSet.key or "${sources.app.tag}/${sources.vpnd.tag}";
+  runtimePath = lib.makeBinPath [
+    desktop-file-utils
+    pciutils
+  ];
+  runtimeLibraryPath = lib.makeLibraryPath [
+    libayatana-appindicator
+  ];
 in
 stdenv.mkDerivation {
   inherit pname version src;
@@ -58,6 +68,7 @@ stdenv.mkDerivation {
     glib
     gsettings-desktop-schemas
     gtk3
+    libayatana-appindicator
     libsoup_3
     openssl
     stdenv.cc.cc.lib
@@ -76,6 +87,13 @@ stdenv.mkDerivation {
       $out/share/applications/NymVPN.desktop
 
     runHook postInstall
+  '';
+
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --prefix PATH : ${runtimePath}
+      --prefix LD_LIBRARY_PATH : ${runtimeLibraryPath}
+    )
   '';
 
   passthru = {
