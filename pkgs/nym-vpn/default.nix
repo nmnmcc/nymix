@@ -39,6 +39,7 @@ let
     exec = "env LOG_FILE=1 RUST_LOG=info,nym_vpn_app=debug ${pname}";
     icon = "nym-vpn-app";
     mimeTypes = [ "x-scheme-handler/nymvpn" ];
+    categories = [ "Network" ];
     startupWMClass = "nym-vpn-app";
     terminal = false;
     tryExec = pname;
