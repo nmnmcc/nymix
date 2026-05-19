@@ -34,7 +34,8 @@ Add this flake as an input and import its NixOS module:
 `services.nym.enable = true;` installs the NymVPN desktop package, installs the
 `nym-vpnc` command-line client, installs the `nym-vpnd` daemon package, enables
 D-Bus and polkit, installs the daemon polkit action, and starts
-`nym-vpnd.service`.
+`nym-vpnd.service`. Local active sessions are allowed to authenticate with the
+daemon without a password prompt.
 
 Components can also be enabled independently:
 

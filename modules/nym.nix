@@ -100,7 +100,20 @@ in
       ++ lib.optional cfg.vpnd.enable cfg.vpnd.package;
 
     services.dbus.enable = lib.mkIf cfg.vpnd.enable true;
-    security.polkit.enable = lib.mkIf cfg.vpnd.enable true;
+    security.polkit = lib.mkIf cfg.vpnd.enable {
+      enable = true;
+      extraConfig = ''
+        polkit.addRule(function(action, subject) {
+          if (
+            action.id == "com.nymvpn.vpnd.unix-access" &&
+            subject.local &&
+            subject.active
+          ) {
+            return polkit.Result.YES;
+          }
+        });
+      '';
+    };
 
     systemd.services.nym-vpnd = lib.mkIf cfg.vpnd.enable {
       description = "NymVPN daemon";
