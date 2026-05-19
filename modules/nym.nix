@@ -100,6 +100,7 @@ in
       ++ lib.optional cfg.vpnd.enable cfg.vpnd.package;
 
     services.dbus.enable = lib.mkIf cfg.vpnd.enable true;
+    security.polkit.enable = lib.mkIf cfg.vpnd.enable true;
 
     systemd.services.nym-vpnd = lib.mkIf cfg.vpnd.enable {
       description = "NymVPN daemon";

@@ -16,6 +16,21 @@ let
   systemSource =
     sources.vpnd.deb.${stdenv.hostPlatform.system}
       or (throw "NymVPN daemon deb is not available for ${stdenv.hostPlatform.system}");
+  polkitPolicy = builtins.toFile "com.nymvpn.vpnd.unix-access.policy" ''
+    <?xml version="1.0" encoding="UTF-8"?>
+    <policyconfig>
+      <action id="com.nymvpn.vpnd.unix-access">
+        <description>Connect via unix socket</description>
+        <message>Authentication is required to connect to the daemon</message>
+
+        <defaults>
+          <allow_any>auth_admin</allow_any>
+          <allow_inactive>auth_admin</allow_inactive>
+          <allow_active>auth_self</allow_active>
+        </defaults>
+      </action>
+    </policyconfig>
+  '';
 in
 stdenv.mkDerivation {
   inherit pname version;
@@ -52,6 +67,8 @@ stdenv.mkDerivation {
     install -Dm755 usr/bin/nym-exclude $out/bin/nym-exclude
     install -Dm444 usr/lib/systemd/system/nym-vpnd.service \
       $out/share/systemd/nym-vpnd.service
+    install -Dm444 ${polkitPolicy} \
+      $out/share/polkit-1/actions/com.nymvpn.vpnd.unix-access.policy
 
     runHook postInstall
   '';
