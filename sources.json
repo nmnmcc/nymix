@@ -1,57 +1,57 @@
 {
   "releaseSet": {
-    "key": "nym-vpn-app-v1.30.0/nym-vpn-core-v1.30.0",
+    "key": "nym-vpn-app-v2026.10.0/nym-vpn-core-v2026.10.0",
     "repo": "nymtech/nym-vpn-client",
     "channel": "stable",
     "source": "github-releases",
-    "version": "1.30.0",
+    "version": "2026.10.0",
     "pairingStrategy": "highest stable X.Y.Z version present in both app and core releases with required Linux app, vpnc, and vpnd assets",
-    "appTag": "nym-vpn-app-v1.30.0",
-    "coreTag": "nym-vpn-core-v1.30.0"
+    "appTag": "nym-vpn-app-v2026.10.0",
+    "coreTag": "nym-vpn-core-v2026.10.0"
   },
   "app": {
-    "tag": "nym-vpn-app-v1.30.0",
-    "version": "1.30.0",
+    "tag": "nym-vpn-app-v2026.10.0",
+    "version": "2026.10.0",
     "icon": {
-      "url": "https://raw.githubusercontent.com/nymtech/nym-vpn-client/nym-vpn-app-v1.30.0/nym-vpn-app/.pkg/icon.svg",
+      "url": "https://raw.githubusercontent.com/nymtech/nym-vpn-client/nym-vpn-app-v2026.10.0/nym-vpn-app/.pkg/icon.svg",
       "hash": "sha256-gFgDnFLFiOOChZccTDfVD9uOBeULvBnX/+uJ1mKiHx4="
     },
     "binary": {
       "x86_64-linux": {
-        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-app-v1.30.0/nym-vpn_1.30.0_linux_x64",
-        "hash": "sha256-MqPk3gGEYg/phR0Nljg5YD3lXcrWhv2LsEKNAjKG3l0="
+        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-app-v2026.10.0/nym-vpn_2026.10.0_linux_x64",
+        "hash": "sha256-Nk29FpHauSV/iVFyQ5RzV5cUTCaZG6YwKMxkjXH5iQ4="
       },
       "aarch64-linux": {
-        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-app-v1.30.0/nym-vpn_1.30.0_linux_arm64",
-        "hash": "sha256-zr67LdXCNKiXWEketuufI8HYTls5ovlQrogMwDTmyrI="
+        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-app-v2026.10.0/nym-vpn_2026.10.0_linux_arm64",
+        "hash": "sha256-bAhdsfuuadalf6EGNBMTNgrfFrSRWDJpSW7LFEOpcGI="
       }
     }
   },
   "vpnc": {
-    "tag": "nym-vpn-core-v1.30.0",
-    "version": "1.30.0",
+    "tag": "nym-vpn-core-v2026.10.0",
+    "version": "2026.10.0",
     "deb": {
       "x86_64-linux": {
-        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-core-v1.30.0/nym-vpnc_1.30.0_amd64.deb",
-        "hash": "sha256-bPkFv7abu+tA9M2mKySdaL4x+AAPbZ8JbCeVtsyEKdI="
+        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-core-v2026.10.0/nym-vpnc_2026.10.0_amd64.deb",
+        "hash": "sha256-/XwKubY4/8FTAGl+Wvjvy0r8HtPYAQt1IzcPqQlpzT0="
       },
       "aarch64-linux": {
-        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-core-v1.30.0/nym-vpnc_1.30.0_arm64.deb",
-        "hash": "sha256-GrzH97G4HLPrR3sLqxzxqD/kUyrd0U6iJMqYRH+PsnY="
+        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-core-v2026.10.0/nym-vpnc_2026.10.0_arm64.deb",
+        "hash": "sha256-s7CTaqb5PDlcwQuy4etfMoX6Ud1uKOKXkl5s8gTSVN4="
       }
     }
   },
   "vpnd": {
-    "tag": "nym-vpn-core-v1.30.0",
-    "version": "1.30.0",
+    "tag": "nym-vpn-core-v2026.10.0",
+    "version": "2026.10.0",
     "deb": {
       "x86_64-linux": {
-        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-core-v1.30.0/nym-vpnd_1.30.0_amd64.deb",
-        "hash": "sha256-WqwVVOd/XfEJ3W933qO0zWIMOK+1jjXJGpPLcoYt+XA="
+        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-core-v2026.10.0/nym-vpnd_2026.10.0_amd64.deb",
+        "hash": "sha256-QI+UiSLmRZbJrkxyfebouMVodWk33UJxxp3Z30EWGvw="
       },
       "aarch64-linux": {
-        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-core-v1.30.0/nym-vpnd_1.30.0_arm64.deb",
-        "hash": "sha256-kRAq6C+XbBdeoHoKWe5vXl2gJlCuC3Zb1EsUrTrKz+U="
+        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-core-v2026.10.0/nym-vpnd_2026.10.0_arm64.deb",
+        "hash": "sha256-0M9bAdk1Hb7KB4RULqOblPLxwSYs0eZ0kjB9URGU83Q="
       }
     }
   }
