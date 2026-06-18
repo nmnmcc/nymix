@@ -22,8 +22,8 @@
         "hash": "sha256-Nk29FpHauSV/iVFyQ5RzV5cUTCaZG6YwKMxkjXH5iQ4="
       },
       "aarch64-linux": {
-        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-app-v2026.10.0/nym-vpn_2026.10.0_linux_arm64.sha256sum",
-        "hash": "sha256-zwEj1LhTwpIbcOl41CMhTTSKdndlcW/XFRiz9A4kJn4="
+        "url": "https://github.com/nymtech/nym-vpn-client/releases/download/nym-vpn-app-v2026.10.0/nym-vpn_2026.10.0_linux_arm64",
+        "hash": "sha256-bAhdsfuuadalf6EGNBMTNgrfFrSRWDJpSW7LFEOpcGI="
       }
     }
   },
